@@ -9,7 +9,7 @@ OUTPUT=embassies-and-consulates.csv
 head -n 1 $SOURCE | sed -e "s/TITLE;TYPE;NAME/CITY;SENDER/" > $OUTPUT
 
 # Write consulates and embassies data
-grep "\"legation\"" $SOURCE >> $OUTPUT
+grep "\"legation\"" $SOURCE | grep -v '^"[^"]*:' >> $OUTPUT
 
 # Remove "type" column, as all data has this type
 sed -i 's/"legation";//g' $OUTPUT
