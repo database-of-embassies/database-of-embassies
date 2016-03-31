@@ -7,4 +7,4 @@ The database is not complete, we need your help to improve it. To add/modify/rem
 Sources that would be nice to integrate, either by script or manually:
 - Individual countries data mentioned at [OpenData](http://opendata.stackexchange.com/questions/4149)
 - [OpenStreetMap](http://wiki.openstreetmap.org/wiki/Tag:amenity%3Dembassy)
-- [Wikipedia](https://en.wikipedia.org/wiki/Category:Diplomatic_missions_by_sending_country), possibly via DBpedia as WikiData does not seem to contain any structure for embassies/consulates.
+- [Wikipedia](https://en.wikipedia.org/wiki/Category:Diplomatic_missions_by_sending_country), or Wikidata ([example](https://www.wikidata.org/wiki/Q2331721)).
