@@ -6,4 +6,8 @@ Download:
 
 (Press "Run" then "Download" then "CSV")
 
-The database is not complete, we need your help to improve it. To add/modify/remove information, please edit the relevant item in [Wikidata](http://wikidata.org) ([example](https://www.wikidata.org/wiki/Q2841718)). If no item is available on Wikidata, please create it, or add it to the city in [Wikivoyage](http://wikivoyage.org) ([example](https://en.wikivoyage.org/wiki/Karachi#Consulates)) if you are not confortable with Wikidata. Thanks!
+# Help needed
+
+**Non-developers:** The database is not complete, we need your help to improve it. To add/modify/remove information, please edit the relevant item in [Wikidata](http://wikidata.org) ([example](https://www.wikidata.org/wiki/Q2841718)). If no item is available on Wikidata, please create it, or add it to the city in [Wikivoyage](http://wikivoyage.org) ([example](https://en.wikivoyage.org/wiki/Karachi#Consulates)) if you are not confortable with Wikidata. Thanks!
+
+**Developers:** Take 10 minutes to familiarize yourself with [SPARQL](https://www.wikidata.org/wiki/Wikidata:SPARQL_query_service/queries) then [pick any issue](https://github.com/nicolas-raoul/database-of-embassies/issues) you like :-) Don't hesitate to create other issues to document any problem with the data, or send pull requests to add your custom scripts. Convenient tools: [QuickStatements](https://tools.wmflabs.org/wikidata-todo/quick_statements.php), [Harvest Templates](https://tools.wmflabs.org/pltools/harvesttemplates/).
