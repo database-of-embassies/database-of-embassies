@@ -28,7 +28,7 @@ then
   SPARQL=$(cat)
 fi
 
-ONELINESPARQL=`echo $SPARQL | tr "\n" " "| sed 's/\//%2F/g'|sed 's/?/%3F/g'|sed 's/:/%3A/g'`
+ONELINESPARQL=`echo $SPARQL | tr "\n" " "| sed 's/\//%2F/g'|sed 's/?/%3F/g'|sed 's/:/%3A/g'| sed 's/&/%26/g' | sed 's/=/%3D/g'`
 
 URL="https://query.wikidata.org/sparql?query=" # Wikidata SPARQL endpoint
 URL="$URL PREFIX wd: <http://www.wikidata.org/entity/>" # Prefixes
@@ -41,7 +41,7 @@ URL="$URL PREFIX pq: <http://www.wikidata.org/prop/qualifier/>"
 URL="$URL $ONELINESPARQL"
 
 # HTMLize some possible query characters
-URL=$(echo "$URL"|sed 's/(/%28/g'| sed 's/)/%29/g'| sed 's/*/%2a/g'|sed 's/=/%3D/g')
+URL=$(echo "$URL"|sed 's/(/%28/g'| sed 's/)/%29/g'| sed 's/*/%2a/g')
 
 # Run HTTP request and send response to standard output
 wget -O - "$URL"
