@@ -1,6 +1,6 @@
 # Database of embassies and consulates
 
-Click here to see the data or download it (Press "Run" then "Download" then "CSV") :
+Click here to see the data or download it (Press the "▶" button, wait for a minute, then click "Download" and "CSV") :
 
 - [Embassies][1]
 - [Consulates][2]
