@@ -2,7 +2,7 @@
 
 # Pre-requisite: Install and run wikivoyage2osm in a parallel directory
 
-SOURCE=../../wikivoyage2osm/enwikivoyage-20160901-listings.csv
+SOURCE=../../../wikivoyage2osm/enwikivoyage-20160901-listings.csv
 OUTPUT=embassies-and-consulates.csv
 
 # Write CSV header

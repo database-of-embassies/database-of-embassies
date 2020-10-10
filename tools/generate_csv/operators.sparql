@@ -1,0 +1,20 @@
+SELECT DISTINCT
+	?operator ?operatorLabel
+WHERE {
+	# Operator of any type of embassy or consulate
+	?QID wdt:P137 ?operator.
+	{?QID p:P31/ps:P31/wdt:P279* wd:Q3917681}
+	UNION {?QID p:P31/ps:P31/wdt:P279* wd:Q5244910}
+	UNION {?QID p:P31/ps:P31/wdt:P279* wd:Q7843791}
+	UNION {?QID p:P31/ps:P31/wdt:P279* wd:Q61881945}
+
+	# Filter out operators that do not exist anymore
+	MINUS {?operator wdt:P582 ?endtime}
+	MINUS {?operator wdt:P576 ?dissolvedOrAbolished}
+	MINUS {?operator p:P31 ?instanceStatement. ?instanceStatement pq:P582 ?endtimeQualifier.}
+
+	# TODO Maybe move to operator's country if there is exactly one, for instance Foreign Ministry of CountryX -> CountryX. Keep non-country operators such as "European Commission" though, and representations like Q48136350 (operator is a region).
+
+	SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
+}
+ORDER BY ?operatorLabel

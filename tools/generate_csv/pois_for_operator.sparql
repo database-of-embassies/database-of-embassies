@@ -1,0 +1,67 @@
+SELECT DISTINCT
+	(SAMPLE(?type) as ?type)
+	(SAMPLE(?typeQID) as ?typeQID)
+	(SAMPLE(?country) as ?country)
+	(SAMPLE(?countryQID) as ?countryQID)
+	(SAMPLE(?city) as ?city)
+	(SAMPLE(?cityQID) as ?cityQID)
+	(SAMPLE(?address) as ?address)
+	(SAMPLE(?coordinates) as ?coordinates)
+	(SAMPLE(?phone) as ?phone)
+	(SAMPLE(?email) as ?email)
+	(SAMPLE(?website) as ?website)
+	(SAMPLE(?facebook) as ?facebook)
+	(SAMPLE(?twitter) as ?twitter)
+	(SAMPLE(?youtube) as ?youtube)
+	(SAMPLE(?inception) as ?inception)
+	(SAMPLE(?image) as ?image)
+	?QID
+WHERE {
+	# Operator (hard-coded because otherwise Wikidata times out)
+	?QID wdt:P137 [OPERATOR].
+
+	# Any type of embassy or consulate
+	{?QID p:P31/ps:P31/wdt:P279* wd:Q3917681}
+	UNION {?QID p:P31/ps:P31/wdt:P279* wd:Q5244910}
+	UNION {?QID p:P31/ps:P31/wdt:P279* wd:Q7843791}
+	UNION {?QID p:P31/ps:P31/wdt:P279* wd:Q61881945}
+
+	# Get the exact type or embassy or consulate, it might be a far subclass.
+	?QID p:P31/ps:P31 ?typeQID. ?typeQID wdt:P279* wd:Q43229. ?typeQID rdfs:label ?type. FILTER (lang(?type) = "en").
+
+	# Area
+	?QID wdt:P131* ?area.
+	?area wdt:P17 ?countryQID. ?countryQID rdfs:label ?country. FILTER (lang(?country) = "en").
+
+	# Optional details
+	OPTIONAL {?QID wdt:P131 ?cityQID. ?cityQID rdfs:label ?city. FILTER (lang(?city) = "en").}
+	OPTIONAL {?QID wdt:P969 ?address}
+	OPTIONAL {?QID wdt:P625 ?coordinates}
+	OPTIONAL {?QID wdt:P1329 ?phone}
+	OPTIONAL {?QID wdt:P968 ?email}
+	OPTIONAL {?QID wdt:P856 ?website}
+	OPTIONAL {?QID wdt:P2013 ?facebook}
+	OPTIONAL {?QID wdt:P2002 ?twitter}
+	OPTIONAL {?QID wdt:P2397 ?youtube}
+	OPTIONAL {?QID wdt:P571 ?inception}
+	OPTIONAL {?QID wdt:P18 ?image}
+
+	# Exclude places that are not in operation anymore
+	MINUS {?QID wdt:P582 ?endtime}
+	MINUS {?QID wdt:P576 ?dissolvedOrAbolished}
+	MINUS {?QID p:P31 ?instanceStatement. ?instanceStatement pq:P582 ?endtimeQualifier}
+
+	# Only countries that still contain the location (ex: Pristina is not in the "Province of Kosovo" because it does not exist anymore)
+	FILTER NOT EXISTS {
+		?QID p:P131/(ps:P131/p:P131)* ?statement.
+		?statement ps:P131 ?area.
+		?QID p:P131/(ps:P131/p:P131)* ?intermediateStatement.
+		?intermediateStatement (ps:P131/p:P131)* ?statement.
+		?intermediateStatement pq:P582 ?endTime.
+	}
+}
+GROUP BY ?QID
+ORDER BY
+	ASC(?country)
+	ASC(?city)
+	DESC(?type)
