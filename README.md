@@ -2,6 +2,8 @@
 
 Download [database_of_embassies.csv](https://raw.githubusercontent.com/database-of-embassies/database-of-embassies/master/database_of_embassies.csv)
 
+![Powered by Wikidata](https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Wikidata_Stamp_Rec_Light.svg/200px-Wikidata_Stamp_Rec_Light.svg.png)
+
 # Help needed
 
 **Non-developers:** The database is not complete, we need your help to improve it. To add/modify/remove information, please edit the relevant item in [Wikidata](http://wikidata.org) ([example](https://www.wikidata.org/wiki/Q2841718)). If no item is available on Wikidata, please create it, or add it to the city in [Wikivoyage](http://wikivoyage.org) ([example](https://en.wikivoyage.org/wiki/Karachi#Consulates)) if you are not confortable with Wikidata. Also, go check physically whether each embassy still exists or not, and if not please [tell us here](https://github.com/nicolas-raoul/database-of-embassies/issues/new). Thanks!
