@@ -7,6 +7,8 @@ WHERE {
 	UNION {?QID p:P31/ps:P31/wdt:P279* wd:Q5244910}
 	UNION {?QID p:P31/ps:P31/wdt:P279* wd:Q7843791}
 	UNION {?QID p:P31/ps:P31/wdt:P279* wd:Q61881945}
+	UNION {?QID p:P31/ps:P31/wdt:P279* wd:Q18414273}
+	UNION {?QID p:P31/ps:P31/wdt:P279* wd:Q73088858}
 
 	# Filter out operators that do not exist anymore
 	MINUS {?operator wdt:P582 ?endtime}

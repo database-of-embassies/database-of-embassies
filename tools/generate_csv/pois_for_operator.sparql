@@ -25,6 +25,8 @@ WHERE {
 	UNION {?QID p:P31/ps:P31/wdt:P279* wd:Q5244910}
 	UNION {?QID p:P31/ps:P31/wdt:P279* wd:Q7843791}
 	UNION {?QID p:P31/ps:P31/wdt:P279* wd:Q61881945}
+	UNION {?QID p:P31/ps:P31/wdt:P279* wd:Q18414273}
+	UNION {?QID p:P31/ps:P31/wdt:P279* wd:Q73088858}
 
 	# Get the exact type or embassy or consulate, it might be a far subclass.
 	?QID p:P31/ps:P31 ?typeQID. ?typeQID wdt:P279* wd:Q43229. ?typeQID rdfs:label ?type. FILTER (lang(?type) = "en").
