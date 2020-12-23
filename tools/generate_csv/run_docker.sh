@@ -1,3 +1,6 @@
+#!/bin/bash
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+cd $DIR
 docker build -t dboe .
 docker run -v $(pwd):/app -w /app -it --rm --name my-running-app dboe
 mv database_of_embassies.csv ../../
