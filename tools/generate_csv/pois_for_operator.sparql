@@ -51,7 +51,9 @@ WHERE {
 	# Exclude places that are not in operation anymore
 	MINUS {?QID wdt:P582 ?endtime}
 	MINUS {?QID wdt:P576 ?dissolvedOrAbolished}
-	MINUS {?QID p:P31 ?instanceStatement. ?instanceStatement pq:P582 ?endtimeQualifier}
+	MINUS {?QID p:P31 ?instanceStatement. ?instanceStatement pq:P582 ?endtimeQualifier} # TODO excludes too many things, for instance embassies that used to be something else
+	MINUS {?countryQID wdt:P582 ?endTime}
+	MINUS {?countryQID wdt:P576 ?dissolvedOrAbolished}
 
 	# Only countries that still contain the location (ex: Pristina is not in the "Province of Kosovo" because it does not exist anymore)
 	FILTER NOT EXISTS {
