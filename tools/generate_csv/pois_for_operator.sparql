@@ -1,6 +1,8 @@
 SELECT DISTINCT
 	(SAMPLE(?type) as ?type)
 	(SAMPLE(?typeQID) as ?typeQID)
+        (GROUP_CONCAT(DISTINCT ?jurisdictionQID; SEPARATOR="|") as ?jurisdictionQIDs)
+        (GROUP_CONCAT(DISTINCT ?jurisdiction; SEPARATOR="|") as ?jurisdictions)
 	(SAMPLE(?country) as ?country)
 	(SAMPLE(?countryQID) as ?countryQID)
 	(SAMPLE(?city) as ?city)
@@ -30,6 +32,9 @@ WHERE {
 
 	# Get the exact type or embassy or consulate, it might be a far subclass.
 	?QID p:P31/ps:P31 ?typeQID. ?typeQID wdt:P279* wd:Q43229. ?typeQID rdfs:label ?type. FILTER (lang(?type) = "en").
+
+        # Jurisdictions
+        OPTIONAL {?QID wdt:P1001 ?jurisdictionQID. ?jurisdictionQID rdfs:label ?jurisdiction. FILTER (lang(?jurisdiction) = "en").}
 
 	# Area
 	?QID wdt:P131* ?area.

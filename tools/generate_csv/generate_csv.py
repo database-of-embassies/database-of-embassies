@@ -66,6 +66,8 @@ def get_pois_for_operator(operator_label, operator_qid):
     for poi in results:
         csv += simplify(sanitize(operator_label), operator_qid) + ";"
         csv += operator_qid + ";"
+        csv += value(poi, "jurisdictions") + ";"
+        csv += value(poi, "jurisdictionQIDs") + ";"
         csv += simplify(value(poi, "country"), value(poi, "countryQID")) + ";"
         csv += value(poi, "countryQID") + ";"
         csv += value(poi, "city") + ";"
@@ -89,6 +91,8 @@ def get_pois_for_operator(operator_label, operator_qid):
 csv_file = open('database_of_embassies.csv', 'w')
 csv_file.write("operator;")
 csv_file.write("operatorQID;")
+csv_file.write("jurisdictions;")
+csv_file.write("jurisdictionQIDs;")
 csv_file.write("country;")
 csv_file.write("countryQID;")
 csv_file.write("city;")
