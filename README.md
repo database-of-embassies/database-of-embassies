@@ -1,6 +1,6 @@
 # Database of embassies and consulates
 
-Download [database_of_embassies.csv](https://raw.githubusercontent.com/database-of-embassies/database-of-embassies/master/database_of_embassies.csv) or [https://database-of-embassies.github.io/ browse the data online].
+Download [database_of_embassies.csv](https://raw.githubusercontent.com/database-of-embassies/database-of-embassies/master/database_of_embassies.csv) or [browse the data online](https://database-of-embassies.github.io).
 
 ![Powered by Wikidata](https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Wikidata_Stamp_Rec_Light.svg/200px-Wikidata_Stamp_Rec_Light.svg.png)
 
