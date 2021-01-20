@@ -3,11 +3,43 @@
 import sys
 import re
 import time
+import urllib
+import urllib.request, json
 from SPARQLWrapper import SPARQLWrapper, JSON
 
-endpoint_url = "https://query.wikidata.org/sparql"
+class Picture:
+    def __init__(self, url):
+         self.url = url
+         self.artist = ''
+         self.license = ''
+         self.licenseURL = ''
+         if url:
+             filename = url[len('http://commons.wikimedia.org/wiki/Special:FilePath/'):] # Remove prefix
+             request = 'https://commons.wikimedia.org/w/api.php?action=query&prop=imageinfo&iiprop=extmetadata&titles=File%3a' + filename + '&format=json'
+             print('Commons request = ' + request)
+             with urllib.request.urlopen(request) as request_object:
+                 response = json.loads(request_object.read().decode())
+                 time.sleep(10) # Avoid overloading the Commons server
+             print('Commons response = ' + str(response))
+             page = list(response['query']['pages'].keys())[0]
+             #print('page = ' + str(page))
+             metadata = response['query']['pages'][page]['imageinfo'][0]['extmetadata']
+             if 'Artist' in metadata:
+                 self.artist = metadata['Artist']['value']
+             if 'LicenseShortName' in metadata:
+                 self.license = metadata['LicenseShortName']['value']
+             if 'LicenseUrl' in metadata:
+                 self.licenseURL = metadata['LicenseUrl']['value']
+
+#picture = Picture('Sign%20of%20the%20embassy%20of%20Afghanistan%20in%20the%20Hague%202016.jpg')
+#print(picture.artist)
+#print(picture.license)
+#print(picture.licenseUrl)
+#exit()
+
+sparql_endpoint_url = "https://query.wikidata.org/sparql"
 user_agent = "Database of embassies/%s.%s (https://github.com/database-of-embassies)" % (sys.version_info[0], sys.version_info[1])
-sparql = SPARQLWrapper(endpoint_url, agent=user_agent)
+sparql = SPARQLWrapper(sparql_endpoint_url, agent=user_agent)
 sparql.setReturnFormat(JSON)
 
 with open('pois_for_operator.sparql', 'r') as file:
@@ -16,7 +48,7 @@ with open('pois_for_operator.sparql', 'r') as file:
 def get_operators():
     with open('operators.sparql', 'r') as file:
         query = file.read()
-    return get_results(query)
+    return run_sparql(query)
 
 def sanitize(s):
     return s.replace(";", ",")
@@ -28,8 +60,6 @@ def value(poi, key):
         return ""
 
 def coordinates(poi):
-    print("=== coordinates ===")
-    print(poi)
     match = re.match(r"Point\((.*) (.*)\)", value(poi, "coordinates"))
     if not match:
         return ";" # Empty cells.
@@ -37,12 +67,12 @@ def coordinates(poi):
     longitude = match.group(1)
     return latitude + ";" + longitude
 
-def get_results(query):
-    print(query)
+def run_sparql(query):
+    print('SPARQL query = ' + query)
     sparql.setQuery(query)
     response = sparql.query().convert()
     time.sleep(60) # Avoid overloading the SPARQL server
-    print(response)
+    print('SPARQL response = ' + response)
     return response["results"]["bindings"]
 
 def simplify(country, country_qid):
@@ -61,9 +91,10 @@ def simplify(country, country_qid):
 def get_pois_for_operator(operator_label, operator_qid):
     """Get embassies/etc for a given operator (usually a  country), example operator_qid: "http://www.wikidata.org/entity/Q17"."""
     query = query_template.replace("[OPERATOR]", "<" + operator_qid + ">")
-    results = get_results(query)
+    results = run_sparql(query)
     csv = ""
     for poi in results:
+        print('poi = ' + poi)
         csv += simplify(sanitize(operator_label), operator_qid) + ";"
         csv += operator_qid + ";"
         csv += value(poi, "jurisdictions") + ";"
@@ -80,7 +111,11 @@ def get_pois_for_operator(operator_label, operator_qid):
         csv += value(poi, "facebook") + ";"
         csv += value(poi, "twitter") + ";"
         csv += value(poi, "youtube") + ";"
-        csv += value(poi, "image") + ";"
+        picture = Picture(value(poi, "image"))
+        csv += picture.url + ";"
+        csv += picture.artist + ";"
+        csv += picture.license + ";"
+        csv += picture.licenseURL + ";"
         csv += value(poi, "type") + ";"
         csv += value(poi, "typeQID") + ";"
         csv += value(poi, "inception") + ";"
@@ -107,6 +142,9 @@ csv_file.write("facebook;")
 csv_file.write("twitter;")
 csv_file.write("youtube;")
 csv_file.write("picture;")
+csv_file.write("pictureAuthor;")
+csv_file.write("pictureLicense;")
+csv_file.write("pictureLicenseURL;")
 csv_file.write("type;")
 csv_file.write("typeQID;")
 csv_file.write("creation;")
