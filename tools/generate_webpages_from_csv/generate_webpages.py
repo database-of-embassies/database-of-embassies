@@ -37,10 +37,13 @@ class DiplomaticRepresentation:
         self.twitter = cells[15]
         self.youtube = cells[16]
         self.picture = cells[17]
-        self.type = cells[18]
-        self.typeQID = cells[19]
-        self.creation = cells[20]
-        self.QID = cells[21]
+        self.pictureAuthor = cells[18]
+        self.pictureLicense = cells[19]
+        self.pictureLicenseURL = cells[20]
+        self.type = cells[21]
+        self.typeQID = cells[22]
+        self.creation = cells[23]
+        self.QID = cells[24]
 
     def title(self, include_city, include_jurisdiction):
         title = self.type # example: 'embassy'
@@ -100,8 +103,9 @@ for csv_row in csv_rows:
     world.add_diplomatic_representation(diplo)
 
 index_file = open('../../../database-of-embassies.github.io/index.html', 'w')
-index_file.write('<html><head><title>Database of embassies and consulates</title></head><body>\n')
+index_file.write('<html><head><title>Database of embassies and consulates</title><meta name="viewport" content="width=device-width, initial-scale=1"></head><body>\n')
 index_file.write('<h1>Database of embassies and consulates</h1>\n')
+index_file.write('<p><a href="">Download the data as CSV.</p>\n')
 
 # Output webpage of each diplomatic representation
 for operator in world.operators.values():
@@ -116,18 +120,21 @@ for operator in world.operators.values():
             include_jurisdiction = len(diplo.jurisdictions) > 1 #and diplo.jurisdictionQIDs != diplo.countryQID
             filename = diplo.url_name(include_city, include_jurisdiction) + '.html'
             path = '../../../database-of-embassies.github.io/' + filename
-            if (os.path.exists(path)):
-                print('Error: Several diplomatic representations for path ' + path) # TODO output both QIDs, one by parsing the HTML file
+            if os.path.exists(path):
+                QID1 = diplo.QID
+                with open(path, 'r') as file:
+                    QID2 = file.read().replace('\n', '').replace('.*entity\/Q','').replace('".*', '')
+                    print('Error: Several diplomatic representations for path ' + path + ': ' + QID1 + ' ' + QID2)
             file = open(path, 'w')
             title = diplo.title(include_city, include_jurisdiction)
-            file.write('<html><title>' + title + '</title><body>\n')
+            file.write('<html><head><title>' + title + '</title><meta name="viewport" content="width=device-width, initial-scale=1"></head><body>\n')
             file.write('<h1>' + title + '</h1>\n')
 
             file.write('<p>Operated by ' + diplo.operator + ' in ')
-            if (diplo.city):
+            if diplo.city:
                 file.write(diplo.city + ', ')
             file.write(diplo.country)
-            if (diplo.address):
+            if diplo.address:
                 file.write('(address:' + diplo.address + ')')
             file.write('.</p>\n')
 
@@ -147,10 +154,14 @@ for operator in world.operators.values():
                 file.write('<p><a href="https://twitter.com/' + diplo.twitter + '">Official Twitter account</a></p>\n')
             if diplo.youtube:
                 file.write('<p><a href="https://www.youtube.com/channel/' + diplo.youtube + '">Official YouTube account</a></p>\n')
-
-            # TODO do not show image without showing its license + author + link to Commons page
-            #if diplo.picture:
-            #    file.write('<p><a href="' + diplo.picture + '"><img src="' + commons_thumbnail(diplo.picture) + '" width="300"/></a></p>\n')
+            if diplo.picture:
+                file.write('<p><a href="' + diplo.picture + '"><img src="' + diplo.picture + '" width="300"/></a><br/>\n')
+	        if diplo.pictureLicense:
+                    license = diplo.pictureLicense
+                    if diplo.pictureLicenseURL:
+                        license = '<a href="' + diplo.pictureLicenseURL + '">' + license + '</a>'
+                    file.write('License: ' + license + '&nbsp;')
+                file.write('Author: ' + diplo.pictureAuthor + '</p>\n')
 
             # TODO only if there are any
             # file.write('<p>Other diplomatic representations of ' + diplo.operator + ' in ' + diplo.country + ':\n')
