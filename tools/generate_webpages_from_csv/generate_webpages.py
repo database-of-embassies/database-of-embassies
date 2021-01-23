@@ -119,7 +119,7 @@ for operator in world.operators.values():
         for diplo in country.values():
             # print('diplo: ' + str(diplo))
             include_city = len(country) > 1
-            include_jurisdiction = len(diplo.jurisdictions) > 0 #and diplo.jurisdictionQIDs != diplo.countryQID
+            include_jurisdiction = len(diplo.jurisdictions) > 1 #and diplo.jurisdictionQIDs != diplo.countryQID
             filename = diplo.url_name(include_city, include_jurisdiction) + '.html'
             path = '../../../database-of-embassies.github.io/' + filename
             if os.path.exists(path):
