@@ -134,9 +134,9 @@ def run_sparql(query):
 
 def simplify(country, country_qid):
     """For brevity and usability, use common names of the countries, rather than their full name"""
+    """Note: Malta and the Sovereign Military Order of Malta are two different things, the first is a country and the second is a sovereign religious order with no territory."""
     if country_qid.endswith("Q31354462"): return "Abkhazia"
     if country_qid.endswith("Q843186"): return "Japan"
-    if country_qid.endswith("Q190353"): return "Malta"
     if country_qid.endswith("Q29999"): return "Netherlands"
     if country_qid.endswith("Q219060"): return "Palestine"
     if country_qid.endswith("Q705141"): return "Taiwan"
