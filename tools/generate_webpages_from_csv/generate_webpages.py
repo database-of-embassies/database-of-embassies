@@ -2,6 +2,7 @@ import os
 import sys
 from urllib import unquote
 import hashlib
+import re
 
 def safe_for_url(string):
     return string.lower().replace(' ', '_').replace("'", '_')
@@ -58,10 +59,11 @@ class DiplomaticRepresentation:
         return title
 
     def url_name(self, include_city, include_jurisdiction):
+        name = safe_for_url(diplo.type) + '_of_'
         if (include_city):
-            name = safe_for_url(self.operator) + '_in_' + safe_for_url(self.city) + '_' + safe_for_url(self.country)
+            name += safe_for_url(self.operator) + '_in_' + safe_for_url(self.city) + '_' + safe_for_url(self.country)
         else:
-            name = safe_for_url(self.operator) + '_in_' + safe_for_url(self.country)
+            name += safe_for_url(self.operator) + '_in_' + safe_for_url(self.country)
         if include_jurisdiction:
             name += '_for_' + '_'.join(self.jurisdictions)
 
@@ -105,7 +107,7 @@ for csv_row in csv_rows:
 index_file = open('../../../database-of-embassies.github.io/index.html', 'w')
 index_file.write('<html><head><title>Database of embassies and consulates</title><meta name="viewport" content="width=device-width, initial-scale=1"></head><body>\n')
 index_file.write('<h1>Database of embassies and consulates</h1>\n')
-index_file.write('<p><a href="">Download the data as CSV.</p>\n')
+index_file.write('<p>This website aims to provide useful and accessible information about diplomatic representations. You can also <a href="https://github.com/database-of-embassies/database-of-embassies/blob/master/database_of_embassies.csv?raw=true">download the data as CSV</a> and even <a href="https://github.com/database-of-embassies/database-of-embassies">help us improve the data</a>.</p>\n')
 
 # Output webpage of each diplomatic representation
 for operator in world.operators.values():
@@ -117,13 +119,14 @@ for operator in world.operators.values():
         for diplo in country.values():
             # print('diplo: ' + str(diplo))
             include_city = len(country) > 1
-            include_jurisdiction = len(diplo.jurisdictions) > 1 #and diplo.jurisdictionQIDs != diplo.countryQID
+            include_jurisdiction = len(diplo.jurisdictions) > 0 #and diplo.jurisdictionQIDs != diplo.countryQID
             filename = diplo.url_name(include_city, include_jurisdiction) + '.html'
             path = '../../../database-of-embassies.github.io/' + filename
             if os.path.exists(path):
                 QID1 = diplo.QID
                 with open(path, 'r') as file:
-                    QID2 = file.read().replace('\n', '').replace('.*entity\/Q','').replace('".*', '')
+                    html = file.read().replace('\n', '')
+                    QID2 = re.search(r'http://www.wikidata.org/entity/Q[^"]*', html).group(0)
                     print('Error: Several diplomatic representations for path ' + path + ': ' + QID1 + ' ' + QID2)
             file = open(path, 'w')
             title = diplo.title(include_city, include_jurisdiction)
