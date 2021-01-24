@@ -17,6 +17,22 @@ def commons_thumbnail(image, width=300): # image = e.g. from Wikidata, width in 
     d = m.hexdigest()
     return "https://upload.wikimedia.org/wikipedia/commons/thumb/"+d[0]+'/'+d[0:2]+'/'+image+'/'+str(width)+'px-'+image
 
+def prefixed_name(country):
+    """Some country names need 'the' before them when used in a sentence, for instance 'in the United Kingdom' rather than 'in United Kingdom'"""
+    if (country.startswith('Democratic')
+        or 'Republic' in country
+        or country.startswith('Government')
+        or country.startswith('People')
+        or country.startswith('United')
+        or country.startswith('Organisation')
+        or country.endswith('Republic')
+        or country.endswith('Administration')
+        or country.endswith('lands') # Marshall Islands, Netherlands
+        or country == 'Philippines'
+        or country == 'Maldives'):
+        country = 'the ' + country
+    return country
+
 class DiplomaticRepresentation:
     def __init__(self, csv_row):
         cells = csv_row.rstrip().split(';') # rstrip removes the trainling \n character.
@@ -49,7 +65,7 @@ class DiplomaticRepresentation:
     def title(self, include_city, include_jurisdiction):
         title = self.type # example: 'embassy'
         title = "%s%s" % (title[0].upper(), title[1:]) # example: 'Embassy'
-        title += ' of ' + self.operator + ' in '
+        title += ' of ' + prefixed_name(self.operator) + ' in '
         if include_city:
             title += self.city + ', '
         title += self.country
@@ -100,6 +116,7 @@ world = World()
 # Parse CSV file
 csv = open('../../database_of_embassies.csv', 'r') 
 csv_rows = csv.readlines() 
+del csv_rows[0] # Remove CSV header row
 for csv_row in csv_rows:
     diplo = DiplomaticRepresentation(csv_row)
     world.add_diplomatic_representation(diplo)
