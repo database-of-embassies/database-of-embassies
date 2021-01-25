@@ -56,7 +56,9 @@ WHERE {
 	# Exclude places that are not in operation anymore
 	MINUS {?QID wdt:P582 ?endtime}
 	MINUS {?QID wdt:P576 ?dissolvedOrAbolished}
+	MINUS {?QID wdt:P3999 ?dateOfOfficialClosure}
 	MINUS {?QID p:P31 ?instanceStatement. ?instanceStatement pq:P582 ?endtimeQualifier} # TODO excludes too many things, for instance embassies that used to be something else
+	MINUS {?QID p:P31/ps:P31/wdt:P279* wd:Q80905563}
 	MINUS {?countryQID wdt:P582 ?endTime}
 	MINUS {?countryQID wdt:P576 ?dissolvedOrAbolished}
 
