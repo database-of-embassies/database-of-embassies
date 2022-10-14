@@ -7,14 +7,18 @@ import urllib
 import urllib.request, json
 from urllib.request import urlopen, Request
 from SPARQLWrapper import SPARQLWrapper, JSON
+from concurrent.futures import ThreadPoolExecutor
+from os import makedirs
+from typing import List
+from pathlib import Path
 
 user_agent = "Database of embassies/%s.%s (https://github.com/database-of-embassies)" % (sys.version_info[0], sys.version_info[1])
 
-def sanitize(s):
+def sanitize(s: str) -> str:
     return s.replace(";", ",").replace('\n', ' ')
 
 sanitize_author_pattern_tag = re.compile("[^>]*>(.*)</[^<]*")
-def sanitize_author(s):
+def sanitize_author(s: str) -> str:
     s = s.replace('\n', ' ') # New lines may interfere with regex
     if 'User:' in s:
         s = re.sub(r".*User:", '', s)
@@ -59,7 +63,7 @@ def sanitize_author(s):
 #exit()
 
 class Picture:
-    def __init__(self, url, qidForDebuggingOnly):
+    def __init__(self, url: str, qidForDebuggingOnly: str):
          self.url = url
          self.artist = ''
          self.license = ''
@@ -96,21 +100,13 @@ class Picture:
 #print(picture.licenseURL)
 #exit()
 
-
-sparql_endpoint_url = "https://query.wikidata.org/sparql"
-sparql = SPARQLWrapper(sparql_endpoint_url, agent=user_agent)
-sparql.setReturnFormat(JSON)
-
-with open('pois_for_operator.sparql', 'r') as file:
-    query_template = file.read()
-
-def get_operators():
+def get_operators(sparql):
     with open('operators.sparql', 'r') as file:
         query = file.read()
-    return run_sparql(query)
+    return run_sparql(sparql,query)
 
 
-def value(poi, key):
+def value(poi, key) -> str:
     if key in poi:
         return sanitize(poi.get(key).get("value"))
     else:
@@ -124,12 +120,12 @@ def coordinates(poi):
     longitude = match.group(1)
     return latitude + ";" + longitude
 
-def run_sparql(query):
-    print('SPARQL query = ' + query)
+def run_sparql(sparql,query: str):
+    print(f"SPARQL query = {query}")
     sparql.setQuery(query)
     response = sparql.query().convert()
     time.sleep(60) # Avoid overloading the SPARQL server
-    print('SPARQL response = ' + str(response))
+    print(f"SPARQL response = {response}")
     return response["results"]["bindings"]
 
 def simplify(country, country_qid):
@@ -145,79 +141,80 @@ def simplify(country, country_qid):
     if country_qid.endswith("Q159583"): return "Vatican"
     return country
 
-def get_pois_for_operator(operator_label, operator_qid):
+def get_pois_for_operator(sparql, operator_label: str, operator_qid) -> str:
     """Get embassies/etc for a given operator (usually a  country), example operator_qid: "http://www.wikidata.org/entity/Q17"."""
     query = query_template.replace("[OPERATOR]", "<" + operator_qid + ">")
-    results = run_sparql(query)
+    results = run_sparql(sparql,query)
     csv = ""
     for poi in results:
         print('poi = ' + str(poi))
-        csv += simplify(sanitize(operator_label), operator_qid) + ";"
-        csv += operator_qid + ";"
-        csv += value(poi, "jurisdictions") + ";"
-        csv += value(poi, "jurisdictionQIDs") + ";"
-        csv += simplify(value(poi, "country"), value(poi, "countryQID")) + ";"
-        csv += value(poi, "countryQID") + ";"
-        csv += value(poi, "city") + ";"
-        csv += value(poi, "cityQID") + ";"
-        csv += value(poi, "address") + ";"
-        csv += coordinates(poi) + ";"
-        csv += value(poi, "phone") + ";"
-        csv += value(poi, "email") + ";"
-        csv += value(poi, "website") + ";"
-        csv += value(poi, "facebook") + ";"
-        csv += value(poi, "twitter") + ";"
-        csv += value(poi, "youtube") + ";"
+        csv += f"{simplify(sanitize(operator_label), operator_qid)};"
+        csv += f"{operator_qid};"
+        csv += f"{value(poi, 'jurisdictions')};"
+        csv += f"{value(poi, 'jurisdictionQIDs')};"
+        csv += f"{simplify(value(poi, 'country'), value(poi, 'countryQID'))};"
+        csv += f"{value(poi, 'countryQID')};"
+        csv += f"{value(poi, 'city')};"
+        csv += f"{value(poi, 'cityQID')};"
+        csv += f"{coordinates(poi)};"
+        csv += f"{value(poi, 'phone')};"
+        csv += f"{value(poi, 'email')};"
+        csv += f"{value(poi, 'website')};"
+        csv += f"{value(poi, 'facebook')};"
+        csv += f"{value(poi, 'twitter')};"
+        csv += f"{value(poi, 'youtube')};"
         qid = value(poi, "QID")
         picture = Picture(value(poi, "image"), qid)
-        csv += picture.url + ";"
-        csv += picture.artist + ";"
-        csv += picture.license + ";"
-        csv += picture.licenseURL + ";"
-        csv += value(poi, "type") + ";"
-        csv += value(poi, "typeQID") + ";"
-        csv += value(poi, "inception") + ";"
+        csv += f"{picture.url};"
+        csv += f"{picture.artist};"
+        csv += f"{picture.license};"
+        csv += f"{picture.licenseURL};"
+        csv += f"{value(poi, 'type')};"
+        csv += f"{value(poi, 'typeQID')};"
+        csv += f"{value(poi, 'inception')};"
         csv += qid
         csv += "\n"
     return csv
 
-csv_file = open('database_of_embassies.csv', 'w')
-csv_file.write("operator;")
-csv_file.write("operatorQID;")
-csv_file.write("jurisdictions;")
-csv_file.write("jurisdictionQIDs;")
-csv_file.write("country;")
-csv_file.write("countryQID;")
-csv_file.write("city;")
-csv_file.write("cityQID;")
-csv_file.write("address;")
-csv_file.write("latitude;")
-csv_file.write("longitude;")
-csv_file.write("phone;")
-csv_file.write("email;")
-csv_file.write("website;")
-csv_file.write("facebook;")
-csv_file.write("twitter;")
-csv_file.write("youtube;")
-csv_file.write("picture;")
-csv_file.write("pictureAuthor;")
-csv_file.write("pictureLicense;")
-csv_file.write("pictureLicenseURL;")
-csv_file.write("type;")
-csv_file.write("typeQID;")
-csv_file.write("creation;")
-csv_file.write("QID;")
-csv_file.write("\n")
 
-#print(get_pois_for_operator("http://www.wikidata.org/entity/Q242"))
-operators = get_operators()
-for operator in operators:
-    print("=== operator ===")
-    print(operator)
-    operator_label = operator.get("operatorLabel").get("value")
-    print("=== operator_label ===")
-    print(operator_label)
-    operator_qid = operator.get("operator").get("value")
-    print("=== operator_qid ===")
-    print(operator_qid)
-    csv_file.write(get_pois_for_operator(operator_label, operator_qid))
+def write_tmp_csv(thread_id, operators):
+    csv_file = open(f"tmp/database_of_embassies_{thread_id}.csv", 'w')
+    for operator in operators:
+        print("=== operator ===")
+        print(operator)
+        operator_label = operator.get("operatorLabel").get("value")
+        print("=== operator_label ===")
+        print(operator_label)
+        operator_qid = operator.get("operator").get("value")
+        print("=== operator_qid ===")
+        print(operator_qid)
+        csv_file.write(get_pois_for_operator(sparql, operator_label, operator_qid))
+
+def get_sublists(lst: List[str],n: int) -> List[List]:
+    subListLength = len(lst) // n 
+    return [lst[i:i + subListLength] for i in range(0, len(lst), subListLength)]
+
+if __name__ == "__main__":
+    makedirs("tmp", exist_ok=True)
+    sparql_endpoint_url = "https://query.wikidata.org/sparql"
+    sparql = SPARQLWrapper(sparql_endpoint_url, agent=user_agent)
+    sparql.setReturnFormat(JSON)
+
+    with open('pois_for_operator.sparql', 'r') as file:
+        query_template = file.read()
+    
+    csv_file = open('database_of_embassies.csv', 'w')
+    columns_name = ["operator", "operatorQID","jurisdictions", "jurisdictionQIDs", "country", "countryQID", "city", "cityQID", "address", "latitude", "longitude","phone","email", "website", "facebook","twitter","youtube","picture","pictureAuthor","pictureLicenseURL","type", "typeQID","creation", "QID"]
+    csv_file.write(f"{';'.join(columns_name)}\n")
+
+    #print(get_pois_for_operator("http://www.wikidata.org/entity/Q242"))
+    operators = get_operators(sparql)
+    number_of_thread = 100
+    with ThreadPoolExecutor(number_of_thread) as exe:
+        # submit tasks to generate files
+        for i, operators_batch in enumerate(get_sublists(operators, number_of_thread)):
+            _ = [exe.submit(write_tmp_csv, i, operators_batch)]
+    
+    for tmp_file in list(Path('tmp').glob('*.csv')):
+        csv_file.write(tmp_file.read_text())
+        tmp_file.unlink() # delete file now that they are concatened
