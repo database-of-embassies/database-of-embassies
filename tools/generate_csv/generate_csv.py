@@ -11,7 +11,10 @@ from concurrent.futures import ThreadPoolExecutor
 from os import makedirs
 from typing import List
 from pathlib import Path
+<<<<<<< HEAD
 import xml.etree.ElementTree
+=======
+>>>>>>> 84564713104e9f3d6c867acef80ccd69b0c0e567
 
 user_agent = (
     "Database of embassies/%s.%s (https://github.com/database-of-embassies)"
@@ -22,6 +25,7 @@ user_agent = (
 def sanitize(s: str) -> str:
     return s.replace(";", ",").replace("\n", " ")
 
+<<<<<<< HEAD
 
 sanitize_author_pattern_tag = re.compile("[^>]*>(.*)</[^<]*")
 
@@ -39,6 +43,24 @@ def sanitize_author(s: str) -> str:
     if "flickr.com" in s:
         s = re.sub(r".*flickr.com[^>]*>", "", s)
         return sanitize(re.sub(r"<.*", "", s))
+=======
+def sanitize(s: str) -> str:
+    return s.replace(";", ",").replace('\n', ' ')
+
+sanitize_author_pattern_tag = re.compile("[^>]*>(.*)</[^<]*")
+def sanitize_author(s: str) -> str:
+    s = s.replace('\n', ' ') # New lines may interfere with regex
+    if 'User:' in s:
+        s = re.sub(r".*User:", '', s)
+        s = s.replace(' (page does not exist)', '')
+        return sanitize(re.sub(r'".*', '', s))
+    if 'User_talk:' in s:
+        s = re.sub(r'.*User talk:', '', s)
+        return sanitize(re.sub(r'".*', '', s))
+    if 'flickr.com' in s:
+        s = re.sub(r".*flickr.com[^>]*>", '', s)
+        return sanitize(re.sub(r'<.*', '', s))
+>>>>>>> 84564713104e9f3d6c867acef80ccd69b0c0e567
     while sanitize_author_pattern_tag.match(s):
         s = sanitize_author_pattern_tag.match(s).group(1)
     if "<" in s:
@@ -78,6 +100,7 @@ def sanitize_author(s: str) -> str:
 
 class Picture:
     def __init__(self, url: str, qidForDebuggingOnly: str):
+<<<<<<< HEAD
         self.url = url
         self.artist = ""
         self.license = ""
@@ -124,6 +147,48 @@ def get_operators(sparql):
     with open("operators.sparql", "r") as file:
         query = file.read()
     return run_sparql(sparql, query)
+=======
+         self.url = url
+         self.artist = ''
+         self.license = ''
+         self.licenseURL = ''
+         if url:
+             filename = url[len('http://commons.wikimedia.org/wiki/Special:FilePath/'):] # Remove prefix
+             request = 'https://commons.wikimedia.org/w/api.php?action=query&prop=imageinfo&iiprop=extmetadata&titles=File%3a' + filename + '&format=json'
+             print('Commons request = ' + request)
+             with urllib.request.urlopen(Request(request, headers={'User-Agent': user_agent})) as request_object:
+                 response = json.loads(request_object.read().decode())
+                 time.sleep(10) # Avoid overloading the Commons server
+             print('Commons response = ' + str(response))
+             page = list(response['query']['pages'].keys())[0]
+             print(page)
+             if page == '-1': # Happens for some deleted picture, for instance File:Dubai World Trade Centre (cropped).jpeg
+                 print('Broken image ' + str(url) + ' used in Wikidata item ' + str(qidForDebuggingOnly))
+                 self.url = '' # Consider the QID has not having a picture
+                 return
+             metadata = response['query']['pages'][page]['imageinfo'][0]['extmetadata']
+             if 'Artist' in metadata:
+                 self.artist = sanitize_author(metadata['Artist']['value'])
+             if 'LicenseShortName' in metadata:
+                 self.license = sanitize(metadata['LicenseShortName']['value'])
+             if 'LicenseUrl' in metadata:
+                 self.licenseURL = sanitize(metadata['LicenseUrl']['value'])
+
+#picture = Picture('http://commons.wikimedia.org/wiki/Special:FilePath/Sign%20of%20the%20embassy%20of%20Afghanistan%20in%20the%20Hague%202016.jpg', 'Q12345')
+#print(picture.artist)
+#print(picture.license)
+#print(picture.licenseURL)
+#picture = Picture('http://commons.wikimedia.org/wiki/Special:FilePath/Dubai%20World%20Trade%20Centre%20(cropped).jpeg', 'Q12345')
+#print(picture.artist)
+#print(picture.license)
+#print(picture.licenseURL)
+#exit()
+
+def get_operators(sparql):
+    with open('operators.sparql', 'r') as file:
+        query = file.read()
+    return run_sparql(sparql,query)
+>>>>>>> 84564713104e9f3d6c867acef80ccd69b0c0e567
 
 
 def value(poi, key) -> str:
@@ -141,12 +206,20 @@ def coordinates(poi):
     longitude = match.group(1)
     return latitude + ";" + longitude
 
+<<<<<<< HEAD
 
 def run_sparql(sparql, query: str):
     print(f"SPARQL query = {query}")
     sparql.setQuery(query)
     response = sparql.query().convert()
     time.sleep(60)  # Avoid overloading the SPARQL server
+=======
+def run_sparql(sparql,query: str):
+    print(f"SPARQL query = {query}")
+    sparql.setQuery(query)
+    response = sparql.query().convert()
+    time.sleep(60) # Avoid overloading the SPARQL server
+>>>>>>> 84564713104e9f3d6c867acef80ccd69b0c0e567
     print(f"SPARQL response = {response}")
     return response["results"]["bindings"]
 
@@ -172,6 +245,7 @@ def simplify(country, country_qid):
         return "Vatican"
     return country
 
+<<<<<<< HEAD
 
 def get_pois_for_operator(sparql, operator_label: str, operator_qid) -> str:
     """Get embassies/etc for a given operator (usually a  country), example operator_qid: "http://www.wikidata.org/entity/Q17"."""
@@ -180,13 +254,26 @@ def get_pois_for_operator(sparql, operator_label: str, operator_qid) -> str:
     csv = ""
     for poi in results:
         print("poi = " + str(poi))
+=======
+def get_pois_for_operator(sparql, operator_label: str, operator_qid) -> str:
+    """Get embassies/etc for a given operator (usually a  country), example operator_qid: "http://www.wikidata.org/entity/Q17"."""
+    query = query_template.replace("[OPERATOR]", "<" + operator_qid + ">")
+    results = run_sparql(sparql,query)
+    csv = ""
+    for poi in results:
+        print('poi = ' + str(poi))
+>>>>>>> 84564713104e9f3d6c867acef80ccd69b0c0e567
         csv += f"{simplify(sanitize(operator_label), operator_qid)};"
         csv += f"{operator_qid};"
         csv += f"{value(poi, 'jurisdictions')};"
         csv += f"{value(poi, 'jurisdictionQIDs')};"
         csv += f"{simplify(value(poi, 'country'), value(poi, 'countryQID'))};"
         csv += f"{value(poi, 'countryQID')};"
+<<<<<<< HEAD
         csv += f"{value(poi, 'city').replace(';','')};"  # need to replace for some case example Washington ;D.C.
+=======
+        csv += f"{value(poi, 'city')};"
+>>>>>>> 84564713104e9f3d6c867acef80ccd69b0c0e567
         csv += f"{value(poi, 'cityQID')};"
         csv += f"{coordinates(poi)};"
         csv += f"{value(poi, 'phone')};"
@@ -198,7 +285,11 @@ def get_pois_for_operator(sparql, operator_label: str, operator_qid) -> str:
         qid = value(poi, "QID")
         picture = Picture(value(poi, "image"), qid)
         csv += f"{picture.url};"
+<<<<<<< HEAD
         csv += f"{picture.artist};" 
+=======
+        csv += f"{picture.artist};"
+>>>>>>> 84564713104e9f3d6c867acef80ccd69b0c0e567
         csv += f"{picture.license};"
         csv += f"{picture.licenseURL};"
         csv += f"{value(poi, 'type')};"
@@ -210,7 +301,11 @@ def get_pois_for_operator(sparql, operator_label: str, operator_qid) -> str:
 
 
 def write_tmp_csv(thread_id, operators):
+<<<<<<< HEAD
     csv_file = open(f"tmp/database_of_embassies_{thread_id}.csv", "w")
+=======
+    csv_file = open(f"tmp/database_of_embassies_{thread_id}.csv", 'w')
+>>>>>>> 84564713104e9f3d6c867acef80ccd69b0c0e567
     for operator in operators:
         print("=== operator ===")
         print(operator)
@@ -222,6 +317,7 @@ def write_tmp_csv(thread_id, operators):
         print(operator_qid)
         csv_file.write(get_pois_for_operator(sparql, operator_label, operator_qid))
 
+<<<<<<< HEAD
 
 def get_sublists(lst: List[str], n: int) -> List[List]:
     subListLength = len(lst) // n
@@ -229,10 +325,19 @@ def get_sublists(lst: List[str], n: int) -> List[List]:
 
 
 if __name__ == "__main__":
+=======
+def get_sublists(lst: List[str],n: int) -> List[List]:
+    subListLength = len(lst) // n 
+    return [lst[i:i + subListLength] for i in range(0, len(lst), subListLength)]
+
+if __name__ == "__main__":
+    makedirs("tmp", exist_ok=True)
+>>>>>>> 84564713104e9f3d6c867acef80ccd69b0c0e567
     sparql_endpoint_url = "https://query.wikidata.org/sparql"
     sparql = SPARQLWrapper(sparql_endpoint_url, agent=user_agent)
     sparql.setReturnFormat(JSON)
 
+<<<<<<< HEAD
     with open("pois_for_operator.sparql", "r") as file:
         query_template = file.read()
 
@@ -269,11 +374,30 @@ if __name__ == "__main__":
     operators = get_operators(sparql)
     number_of_thread = 20
     makedirs("tmp", exist_ok=True)
+=======
+    with open('pois_for_operator.sparql', 'r') as file:
+        query_template = file.read()
+    
+    csv_file = open('database_of_embassies.csv', 'w')
+    columns_name = ["operator", "operatorQID","jurisdictions", "jurisdictionQIDs", "country", "countryQID", "city", "cityQID", "address", "latitude", "longitude","phone","email", "website", "facebook","twitter","youtube","picture","pictureAuthor","pictureLicenseURL","type", "typeQID","creation", "QID"]
+    csv_file.write(f"{';'.join(columns_name)}\n")
+
+    #print(get_pois_for_operator("http://www.wikidata.org/entity/Q242"))
+    operators = get_operators(sparql)
+    number_of_thread = 100
+>>>>>>> 84564713104e9f3d6c867acef80ccd69b0c0e567
     with ThreadPoolExecutor(number_of_thread) as exe:
         # submit tasks to generate files
         for i, operators_batch in enumerate(get_sublists(operators, number_of_thread)):
             _ = [exe.submit(write_tmp_csv, i, operators_batch)]
+<<<<<<< HEAD
 
     for tmp_file in list(Path("tmp").glob("*.csv")):
         csv_file.write(tmp_file.read_text())
         tmp_file.unlink()  # delete file now that they are concatened
+=======
+    
+    for tmp_file in list(Path('tmp').glob('*.csv')):
+        csv_file.write(tmp_file.read_text())
+        tmp_file.unlink() # delete file now that they are concatened
+>>>>>>> 84564713104e9f3d6c867acef80ccd69b0c0e567
