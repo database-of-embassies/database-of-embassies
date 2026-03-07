@@ -1,5 +1,5 @@
 SELECT DISTINCT
-	?operator ?operatorLabel
+	?operator ?operatorLabel (SAMPLE(?operatorISO) as ?operatorISO)
 WHERE {
 	# Operator of any type of embassy or consulate
 	?QID wdt:P137 ?operator.
@@ -17,6 +17,10 @@ WHERE {
 
 	# TODO Maybe move to operator's country if there is exactly one, for instance Foreign Ministry of CountryX -> CountryX. Keep non-country operators such as "European Commission" though, and representations like Q48136350 (operator is a region).
 
+	# ISO 3166-1 alpha-2 code
+	OPTIONAL {?operator wdt:P297 ?operatorISO}
+
 	SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
 }
+GROUP BY ?operator ?operatorLabel
 ORDER BY ?operatorLabel

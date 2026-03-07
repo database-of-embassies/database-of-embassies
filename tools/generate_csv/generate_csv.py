@@ -145,7 +145,7 @@ def simplify(country, country_qid):
     if country_qid.endswith("Q159583"): return "Vatican"
     return country
 
-def get_pois_for_operator(operator_label, operator_qid):
+def get_pois_for_operator(operator_label, operator_qid, operator_iso):
     """Get embassies/etc for a given operator (usually a  country), example operator_qid: "http://www.wikidata.org/entity/Q17"."""
     query = query_template.replace("[OPERATOR]", "<" + operator_qid + ">")
     results = run_sparql(query)
@@ -154,10 +154,12 @@ def get_pois_for_operator(operator_label, operator_qid):
         print('poi = ' + str(poi))
         csv += simplify(sanitize(operator_label), operator_qid) + ";"
         csv += operator_qid + ";"
+        csv += operator_iso + ";"
         csv += value(poi, "jurisdictions") + ";"
         csv += value(poi, "jurisdictionQIDs") + ";"
         csv += simplify(value(poi, "country"), value(poi, "countryQID")) + ";"
         csv += value(poi, "countryQID") + ";"
+        csv += value(poi, "countryISO") + ";"
         csv += value(poi, "city") + ";"
         csv += value(poi, "cityQID") + ";"
         csv += value(poi, "address") + ";"
@@ -184,10 +186,12 @@ def get_pois_for_operator(operator_label, operator_qid):
 csv_file = open('database_of_embassies.csv', 'w')
 csv_file.write("operator;")
 csv_file.write("operatorQID;")
+csv_file.write("operatorISO;")
 csv_file.write("jurisdictions;")
 csv_file.write("jurisdictionQIDs;")
 csv_file.write("country;")
 csv_file.write("countryQID;")
+csv_file.write("countryISO;")
 csv_file.write("city;")
 csv_file.write("cityQID;")
 csv_file.write("address;")
@@ -220,4 +224,7 @@ for operator in operators:
     operator_qid = operator.get("operator").get("value")
     print("=== operator_qid ===")
     print(operator_qid)
-    csv_file.write(get_pois_for_operator(operator_label, operator_qid))
+    operator_iso = value(operator, "operatorISO")
+    print("=== operator_iso ===")
+    print(operator_iso)
+    csv_file.write(get_pois_for_operator(operator_label, operator_qid, operator_iso))

@@ -5,6 +5,7 @@ SELECT DISTINCT
         (GROUP_CONCAT(DISTINCT ?jurisdiction; SEPARATOR="|") as ?jurisdictions)
 	(SAMPLE(?country) as ?country)
 	(SAMPLE(?countryQID) as ?countryQID)
+	(SAMPLE(?countryISO) as ?countryISO)
 	(SAMPLE(?city) as ?city)
 	(SAMPLE(?cityQID) as ?cityQID)
 	(SAMPLE(?address) as ?address)
@@ -39,6 +40,9 @@ WHERE {
 	# Area
 	?QID wdt:P131* ?area.
 	?area wdt:P17 ?countryQID. ?countryQID rdfs:label ?country. FILTER (lang(?country) = "en").
+
+	# ISO 3166-1 alpha-2 code for the country
+	OPTIONAL {?countryQID wdt:P297 ?countryISO}
 
 	# Optional details
 	OPTIONAL {?QID wdt:P131 ?cityQID. ?cityQID rdfs:label ?city. FILTER (lang(?city) = "en").}

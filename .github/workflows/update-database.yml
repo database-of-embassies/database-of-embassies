@@ -1,0 +1,44 @@
+name: Update database of embassies
+
+on:
+  schedule:
+    # Run every Monday at 06:00 UTC
+    - cron: '0 6 * * 1'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  update-csv:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r tools/generate_csv/requirements.txt
+
+      - name: Generate CSV
+        working-directory: tools/generate_csv
+        run: python generate_csv.py
+
+      - name: Move CSV to repo root
+        run: mv tools/generate_csv/database_of_embassies.csv database_of_embassies.csv
+
+      - name: Check for changes
+        id: diff
+        run: |
+          git diff --quiet database_of_embassies.csv && echo "changed=false" >> "$GITHUB_OUTPUT" || echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Commit and push
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add database_of_embassies.csv
+          git commit -m "Update database of embassies (automated)"
+          git push
